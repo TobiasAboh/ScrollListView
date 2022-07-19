@@ -1,82 +1,63 @@
-// ignore_for_file: use_key_in_widget_constructors, must_be_immutable, unnecessary_this, unnecessary_cast
+// ignore_for_file: use_key_in_widget_constructors, must_be_immutable, unnecessary_this, unnecessary_cast, must_call_super, prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import, depend_on_referenced_packages, prefer_final_fields
 import 'package:flutter/material.dart';
-
+import 'package:scroll_snap_list/scroll_snap_list.dart';
 
 class ScrollComponent extends StatefulWidget {
-  List<Widget> listItems;
-  Color color;
-  double minHeight;
-  double maxHeight;
-  ScrollController controller;
-  ScrollComponent({required this.listItems, this.color = Colors.grey, this.minHeight = 50, required this.maxHeight, required this.controller});
+  List<Widget> listItems; // list of widgets
+  Color backgroundColor; // background color of the widget
+  Color color; // color of non active items
+  Color activeColor; // color of current active item 
+  double minHeight; // min height for each row
+  double maxHeight; // max height for each row
+  double height; // hieght of the outer container
+  ScrollComponent({required this.listItems, this.backgroundColor = Colors.white, this.color = Colors.grey, this.activeColor = Colors.blueGrey, this.height = 200,  this.minHeight = 50, required this.maxHeight});
   
   @override
   State<ScrollComponent> createState() => _ScrollComponentState();
 }
 
 class _ScrollComponentState extends State<ScrollComponent> {
-  GlobalKey widgetKey = GlobalKey();
-  List<GlobalKey> keys = [];
-  Size? cardSize;
-  void getKeys(){
-    for(int i = 0; i < widget.listItems.length; i++){
-      keys.add(GlobalKey());
-    }
+  int _focusedIndex = 0;
+
+  void _onFocusedItem(int index){
+    setState(() {
+      _focusedIndex = index;
+    });
   }
 
-  
-  int selectedElementWidget = 0;
+  //Widget format for a single row
+  Widget _buildListItems(BuildContext context, int index){
+    return Container(
+          constraints: BoxConstraints(
+            minHeight: _focusedIndex == index ? this.widget.minHeight + 30 : this.widget.minHeight,
+            maxHeight: this.widget.maxHeight,
+          ),
+          child: Card(  
+            elevation: _focusedIndex == index ? 20 : null,
+            color: _focusedIndex == index ? this.widget.activeColor : this.widget.color,
+            child: Center(
+              heightFactor: 1,
+              child: this.widget.listItems[index],)
+          ),
+        ); 
+  }
   @override
   Widget build(BuildContext context) {
-    getKeys();
-
-    bool isActive(i){
-      RenderObject? bigBox = widgetKey.currentContext?.findRenderObject();
-      RenderObject? box =  keys[i].currentContext?.findRenderObject();
-      if(box != null){
-        final double yPosition = (box as RenderBox).localToGlobal(Offset.zero).dy;
-        final double parentYPosition = (bigBox as RenderBox).localToGlobal(Offset.zero).dy;
-
-        return (yPosition - parentYPosition) >= 0 && (yPosition - parentYPosition) <= 10;
-      }
-      return false;
-    }
     return Container(
-      height: 400,
-      color: Colors.black,
-    child: Center(child: Container(
-      key: widgetKey,
+      decoration: BoxDecoration(
+        color: this.widget.backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
       width: 500,
-      height: 50,
-      color: Colors.grey,
-      child: ListView.builder(
-      itemExtent: this.widget.minHeight,
-      controller: widget.controller,
-      itemCount: this.widget.listItems.length,
-      itemBuilder: (context, index){
-      return Container(
-        constraints: BoxConstraints(
-          // minHeight: this.widget.minHeight,
-          maxHeight: this.widget.maxHeight,
-        ),
-        child: Card(
-          
-          key: keys[index],
-          color: isActive(index) ? Colors.blue : this.widget.color,
-          child: this.widget.listItems[index],
-        ),
-      );
-    }))));
-    
-    
-    // CupertinoPicker(
-    //   onSelectedItemChanged: (value) {
-    //     selectedElementWidget = value;
-    //   },
-    //   // backgroundColor: Colors.grey,
-    //   itemExtent: 30,
-    //   children: this.widget.listItems,
-    // ) ;
-    // 
+      height: this.widget.height,
+      child: Padding(
+        padding: EdgeInsets.all(6),
+        child: Container(
+          child: ScrollSnapList(
+            scrollDirection: Axis.vertical,
+            itemSize: this.widget.minHeight,
+            itemCount: this.widget.listItems.length,
+            itemBuilder: _buildListItems,
+            onItemFocus: _onFocusedItem,))));
   }
 }

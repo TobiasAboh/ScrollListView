@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Scroll View Demo'),
     );
   }
 }
@@ -34,19 +34,11 @@ class MyHomePage extends StatefulWidget {
 
 
 class _MyHomePageState extends State<MyHomePage> {
-  final ScrollController _scrollController = ScrollController();
+
   // ignore: prefer_const_constructors
   List<Widget> listElements = [Text("ITEM 1"), Text("ITEM 2"), Text("ITEM 3"), Text("ITEM 4"), Text("ITEM 5"), Text("ITEM 6")];
-  
-
-  void refresh(){
-    setState((){});
-  }
 
   @override
-  void initState(){
-    _scrollController.addListener(refresh);
-  }
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -54,9 +46,9 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: ScrollComponent(
-        controller: _scrollController,
-        listItems: listElements,
-        maxHeight: MediaQuery.of(context).size.height,
+          height: 200,
+          listItems: listElements,
+          maxHeight: MediaQuery.of(context).size.height,
       ),
       
     ));
